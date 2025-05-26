@@ -20,8 +20,8 @@ Pod::Spec.new do |s|
 
   s.dependency 'ExpoModulesCore'
 
-  s.dependency 'WechatOpenSDK-XCFramework'
-
+  s.dependency 'WechatOpenSDK-Swift'
+  
   # Swift/Objective-C compatibility
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES',
