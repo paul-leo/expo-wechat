@@ -1,14 +1,18 @@
 package expo.modules.wechat
 
+import android.content.Intent
 import android.util.Base64
 import com.tencent.mm.opensdk.diffdev.DiffDevOAuthFactory
 import com.tencent.mm.opensdk.diffdev.OAuthErrCode
 import com.tencent.mm.opensdk.diffdev.OAuthListener
+import com.tencent.mm.opensdk.modelbase.BaseReq
+import com.tencent.mm.opensdk.modelbase.BaseResp
 import com.tencent.mm.opensdk.modelmsg.SendAuth
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX
 import com.tencent.mm.opensdk.modelmsg.WXMediaMessage
 import com.tencent.mm.opensdk.modelmsg.WXTextObject
 import com.tencent.mm.opensdk.openapi.IWXAPI
+import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler
 import com.tencent.mm.opensdk.openapi.WXAPIFactory
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.exception.CodedException
@@ -20,7 +24,16 @@ import expo.modules.kotlin.modules.ModuleDefinition
 val apiNotRegisteredException =
     CodedException("-1", "Please call registerApp to initialize WX api first! ", null)
 
-class ExpoWechatModule : Module() {
+class ExpoWechatModule : Module(), IWXAPIEventHandler {
+
+    companion object {
+        var moduleInstance: ExpoWechatModule? = null
+
+        fun sendEventToJS(eventName: String, params: Map<String, Any?>) {
+            moduleInstance?.sendEvent(eventName, params)
+        }
+    }
+
     var api: IWXAPI? = null;
     var wxAppId: String? = null;
 
@@ -40,6 +53,10 @@ class ExpoWechatModule : Module() {
 
         // Defines event names that the module can send to JavaScript.
         Events("onQRCodeAuthGotQRCode", "onQRCodeAuthUserScanned", "onQRCodeAuthFinished")
+
+        OnCreate {
+            moduleInstance = this@ExpoWechatModule
+        }
 
         AsyncFunction("registerApp") { appId: String, universalLink: String ->
             wxAppId = appId;
@@ -156,5 +173,17 @@ class ExpoWechatModule : Module() {
                 promise.reject(apiNotRegisteredException)
             }
         }
+    }
+
+    fun handleIntent(intent: Intent) {
+        api?.handleIntent(intent, this);
+    }
+
+    override fun onReq(p0: BaseReq?) {
+
+    }
+
+    override fun onResp(p0: BaseResp?) {
+        
     }
 }

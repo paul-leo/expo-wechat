@@ -37,3 +37,25 @@ URL Scheme用于给你的应用注册一个独一无二的链接，使别的软�
 
 URL Scheme白名单，也就是`LSApplicationQueriesSchemes`字段，因为是固定不变的，所以已经自动帮你配置好。
 
+## 安卓
+
+```text
+-keep class com.tencent.mm.opensdk.** {
+    *;
+}
+
+-keep class com.tencent.wxop.** {
+    *;
+}
+
+-keep class com.tencent.mm.sdk.** {
+    *;
+}
+```
+
+需要配置proguard文件，在`app.json`中添加以下字段：
+```json
+"android": {
+    "extraProguardRules": ""
+}
+...
