@@ -15,4 +15,4 @@ export type ChangeEventPayload = {
 /**
  * 微信分享目标场景。发送到聊天、朋友圈、收藏。
  */
-export type ExpoWeChatShareScene = 'session' | 'timeline' | 'favorite';
+export type ExpoWeChatShareScene = 'session' | 'timeline' | 'favorite' | 'status' | 'specifiedContact';

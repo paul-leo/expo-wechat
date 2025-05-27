@@ -32,7 +32,7 @@ declare class ExpoWechatModule extends NativeModule<ExpoWechatModuleEvents> {
    * @param appId 微信App ID
    * @param appSecret 微信App Secret
    */
-  sendAuthByQRRequest(appId: string, appSecret: string): Promise<string>
+  sendAuthByQRRequest(appId: string, appSecret: string, scope: string): Promise<string>
 
   /**
    * 分享文字到微信。返回分享结果。
