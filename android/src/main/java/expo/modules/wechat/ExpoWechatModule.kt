@@ -1,10 +1,20 @@
 package expo.modules.wechat
 
+import com.tencent.mm.opensdk.modelmsg.SendAuth
+import com.tencent.mm.opensdk.openapi.IWXAPI
+import com.tencent.mm.opensdk.openapi.SendReqCallback
+import com.tencent.mm.opensdk.openapi.WXAPIFactory
+import expo.modules.kotlin.Promise
+import expo.modules.kotlin.exception.CodedException
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import java.net.URL
 
+val apiNotRegisteredException = CodedException("-1", "Please call registerApp to initialize WX api first! ", null)
+
 class ExpoWechatModule : Module() {
+  var api: IWXAPI? = null;
+  var wxAppId: String? = null;
   // Each module class must implement the definition function. The definition consists of components
   // that describes the module's functionality and behavior.
   // See https://docs.expo.dev/modules/module-api for more details about available components.
@@ -22,18 +32,53 @@ class ExpoWechatModule : Module() {
     // Defines event names that the module can send to JavaScript.
     Events("onChange")
 
-    // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
-    Function("hello") {
-      "Hello world! 👋"
+    AsyncFunction("registerApp") { appId: String, universalLink: String ->
+      wxAppId = appId;
+      api = WXAPIFactory.createWXAPI(appContext.reactContext, appId, true)
+      api?.registerApp(appId)
+      return@AsyncFunction true
     }
 
-    // Defines a JavaScript function that always returns a Promise and whose native code
-    // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("setValueAsync") { value: String ->
-      // Send an event to JavaScript.
-      sendEvent("onChange", mapOf(
-        "value" to value
-      ))
+    AsyncFunction("isWXAppInstalled") { promise: Promise ->
+      if (api != null) {
+        promise.resolve(api!!.isWXAppInstalled)
+      } else {
+        promise.reject(apiNotRegisteredException)
+      }
     }
+
+    AsyncFunction("getApiVersion") { promise: Promise ->
+      if (api != null) {
+        promise.resolve(api!!.wxAppSupportAPI)
+      } else {
+        promise.reject(apiNotRegisteredException)
+      }
+    }
+
+    AsyncFunction("openWXApp") { promise: Promise ->
+      if (api != null) {
+        promise.resolve(api!!.openWXApp())
+      } else {
+        promise.reject(apiNotRegisteredException)
+      }
+    }
+
+    AsyncFunction("sendAuthRequest") { scope: String, state: String, promise: Promise ->
+      if (api != null) {
+        val authRequest = SendAuth.Req()
+        authRequest.scope = scope
+        authRequest.state = state
+        api?.sendReq(authRequest, object : SendReqCallback {
+          override fun onSendFinish(p0: Boolean) {
+
+          }
+        })
+      } else {
+        promise.reject(apiNotRegisteredException)
+      }
+    }
+
+
+
   }
 }

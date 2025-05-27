@@ -4,10 +4,8 @@ import { ExpoWechatModuleEvents, ExpoWeChatShareScene } from './ExpoWechat.types
 
 declare class ExpoWechatModule extends NativeModule<ExpoWechatModuleEvents> {
   isWXAppInstalled(): Promise<boolean>
-  isWXAppSupportApi(): Promise<boolean>
-  isWXAppSupportStateAPI(): Promise<boolean>
-  isWXAppSupportQRCodePayAPI(): Promise<boolean>
-  getWXAppInstallUrl(): Promise<string>
+  // isWXAppSupportApi(): Promise<number>
+  // getWXAppInstallUrl(): Promise<string>
   getApiVersion(): Promise<string>
   
   /**
@@ -22,8 +20,12 @@ declare class ExpoWechatModule extends NativeModule<ExpoWechatModuleEvents> {
    */
   openWXApp(): Promise<boolean>
 
-
-  sendAuthRequest(scope: string[], state: string): Promise<boolean>
+  /**
+   * 发送微信授权登录请求。返回**发送**结果，注意是发送结果不是授权结果，授权结果要从事件中获取。
+   * @param scope 微信scope字段。
+   * @param state 微信state字段。
+   */
+  sendAuthRequest(scope: string, state: string): Promise<boolean>
 
   /**
    * 发送微信扫码登录请求。返回微信登录二维码。
