@@ -1,13 +1,11 @@
 import { NativeModule, requireNativeModule } from 'expo';
 
-import { ExpoWechatModuleEvents, ExpoWeChatShareScene } from './ExpoWechat.types';
+import { ExpoWechatModuleEvents, ShareScene, ShareImageOptions, ShareMusicOptions, ShareVideoOptions, ShareWebpageOptions, ShareMiniProgramOptions, LaunchMiniProgramOptions } from './ExpoWechat.types';
 
 declare class ExpoWechatModule extends NativeModule<ExpoWechatModuleEvents> {
   isWXAppInstalled(): Promise<boolean>
-  // isWXAppSupportApi(): Promise<number>
-  // getWXAppInstallUrl(): Promise<string>
   getApiVersion(): Promise<string>
-  
+
   /**
    * 初始化微信SDK。返回初始化结果。
    * @param appId 微信App ID
@@ -39,30 +37,58 @@ declare class ExpoWechatModule extends NativeModule<ExpoWechatModuleEvents> {
    * @param text 要分享的文字内容。
    * @param scene 分享目标场景。
    */
-  shareText(text: string, scene: ExpoWeChatShareScene): Promise<any>
+  shareText(text: string, scene: ShareScene): Promise<boolean>
 
   /**
    * 分享图片到微信。返回分享结果。
-   * @param base64OrImageUri 图片内容，可以是远程网络图片，或者base64编码的图片数据。
-   * @param scene 要分享的目标场景。
    */
-  shareImage(base64OrImageUri: string, scene: ExpoWeChatShareScene): Promise<any>
+  shareImage(options: ShareImageOptions): Promise<boolean>
 
   /**
    * 分享文件到微信。返回分享结果。
-   * @param uri 文件URI。
+   * @param base64OrFileUri 文件内容，可以是本地文件URI，或者base64编码的文件数据。
+   * @param title 文件标题。
    * @param scene 要分享的目标场景。
    */
-  shareFile(uri: string, scene: ExpoWeChatShareScene): Promise<any>
+  shareFile(base64OrFileUri: string, title: string, scene: ShareScene): Promise<boolean>
 
-  // shareMusic()
-  // shareVideo()
-  // shareWebpage()
-  // shareMiniProgram()
-  // launchMiniProgram()
-  // pay()
-  // chooseInvoice()
+  /**
+   * 分享音乐到微信。返回分享结果。
+   */
+  shareMusic(options: ShareMusicOptions): Promise<boolean>;
+
+  /**
+   * 分享视频到微信。返回分享结果。
+   */
+  shareVideo(options: ShareVideoOptions): Promise<boolean>;
+  /**
+   * 分享网页到微信。返回分享结果。
+   */
+  shareWebpage(options: ShareWebpageOptions): Promise<boolean>
+  /**
+   * 分享小程序到微信。返回分享结果。
+   */
+  shareMiniProgram(options: ShareMiniProgramOptions): Promise<boolean>
+
+  /**
+   * 打开微信小程序。返回打开结果。
+   */
+  launchMiniProgram(options: LaunchMiniProgramOptions): Promise<boolean>
+
+  /**
+   * 打开微信客服聊天。
+   */
+  openWeChatCustomerServiceChat(cropId: string, url: string): Promise<boolean>
+  /**
+   * 发送订阅消息。
+   * @param scene 场景
+   * @param templateId 模板ID
+   * @param reserved 保留字段
+   */
+  sendSubscribeMessage(scene: number,
+    templateId: string,
+    reserved: string): Promise<boolean>
+  pay(): Promise<boolean>
 }
 
-// This call loads the native module object from the JSI.
 export default requireNativeModule<ExpoWechatModule>('ExpoWechat');

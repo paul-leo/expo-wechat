@@ -1,14 +1,23 @@
 package expo.modules.wechat
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.URL
 import java.security.MessageDigest
+import androidx.core.graphics.scale
+import com.tencent.mm.opensdk.modelmsg.WXMiniProgramObject
+import java.io.ByteArrayOutputStream
+import java.io.FileInputStream
 
 class WeChatSDKUtils {
     companion object {
+        var thumbImageSizeKB = 32
+
         suspend fun getAccessToken(weiXinId: String, weiXinSecret: String): String? {
             val url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential" +
                     "&appid=$weiXinId&secret=$weiXinSecret"
@@ -108,6 +117,52 @@ class WeChatSDKUtils {
                 "status" -> SendMessageToWX.Req.WXSceneStatus
                 "contact" -> SendMessageToWX.Req.WXSceneSpecifiedContact
                 else -> SendMessageToWX.Req.WXSceneSession
+            }
+        }
+
+        fun getBitmapFromBase64OrUri(base64OrUri: String): Bitmap {
+            val isFileUri = base64OrUri.startsWith("file://")
+            if (isFileUri) {
+                val filePath = base64OrUri.substring(7)
+                val fileStream = FileInputStream(filePath)
+                val bitmap = BitmapFactory.decodeStream(fileStream)
+                return bitmap
+            } else {
+                val bytes = Base64.decode(base64OrUri, Base64.DEFAULT)
+                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                return bitmap
+            }
+        }
+
+        fun compressBitmapToTargetSize(bitmap: Bitmap, targetSizeKB: Int): ByteArray {
+            val outputStream = ByteArrayOutputStream()
+            var quality = 100
+            // 第一次不压缩，直接写入
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+
+            // 循环压缩直到小于目标大小
+            while (outputStream.toByteArray().size / 1024 > targetSizeKB) {
+                outputStream.reset()
+                if (quality > 10) {
+                    quality -= 8 // 每次减少8%质量
+                } else {
+                    // 如果质量降到10%以下仍然太大，则缩放图片
+                    val scaledWidth = (bitmap.width * 0.7f).toInt()
+                    val scaledHeight = (bitmap.height * 0.7f).toInt()
+                    val scaledBitmap = bitmap.scale(scaledWidth, scaledHeight)
+                    return compressBitmapToTargetSize(scaledBitmap, targetSizeKB)
+                }
+                bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+            }
+            return outputStream.toByteArray()
+        }
+
+        fun getMiniProgramType(miniProgramType: String): Int {
+            return when (miniProgramType) {
+                "release" -> WXMiniProgramObject.MINIPTOGRAM_TYPE_RELEASE
+                "test" -> WXMiniProgramObject.MINIPROGRAM_TYPE_TEST
+                "preview" -> WXMiniProgramObject.MINIPROGRAM_TYPE_PREVIEW
+                else -> WXMiniProgramObject.MINIPTOGRAM_TYPE_RELEASE
             }
         }
     }

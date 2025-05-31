@@ -1,24 +1,44 @@
 package expo.modules.wechat
 
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.util.Base64
+import androidx.core.content.FileProvider
+import com.tencent.mm.opensdk.constants.ConstantsAPI
 import com.tencent.mm.opensdk.diffdev.DiffDevOAuthFactory
 import com.tencent.mm.opensdk.diffdev.OAuthErrCode
 import com.tencent.mm.opensdk.diffdev.OAuthListener
 import com.tencent.mm.opensdk.modelbase.BaseReq
 import com.tencent.mm.opensdk.modelbase.BaseResp
+import com.tencent.mm.opensdk.modelbiz.SubscribeMessage
+import com.tencent.mm.opensdk.modelbiz.WXLaunchMiniProgram
+import com.tencent.mm.opensdk.modelbiz.WXLaunchMiniProgramWithToken
+import com.tencent.mm.opensdk.modelbiz.WXOpenCustomerServiceChat
 import com.tencent.mm.opensdk.modelmsg.SendAuth
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX
+import com.tencent.mm.opensdk.modelmsg.ShowMessageFromWX
+import com.tencent.mm.opensdk.modelmsg.WXFileObject
+import com.tencent.mm.opensdk.modelmsg.WXImageObject
 import com.tencent.mm.opensdk.modelmsg.WXMediaMessage
+import com.tencent.mm.opensdk.modelmsg.WXMiniProgramObject
+import com.tencent.mm.opensdk.modelmsg.WXMusicObject
+import com.tencent.mm.opensdk.modelmsg.WXMusicVideoObject
 import com.tencent.mm.opensdk.modelmsg.WXTextObject
+import com.tencent.mm.opensdk.modelmsg.WXVideoObject
+import com.tencent.mm.opensdk.modelmsg.WXWebpageObject
+import com.tencent.mm.opensdk.modelpay.PayReq
+import com.tencent.mm.opensdk.modelpay.PayResp
 import com.tencent.mm.opensdk.openapi.IWXAPI
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler
+import com.tencent.mm.opensdk.openapi.SendReqCallback
 import com.tencent.mm.opensdk.openapi.WXAPIFactory
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.exception.CodedException
 import expo.modules.kotlin.functions.Coroutine
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import java.io.File
+import java.io.FileInputStream
 
 
 val apiNotRegisteredException =
@@ -52,7 +72,15 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
         )
 
         // Defines event names that the module can send to JavaScript.
-        Events("onQRCodeAuthGotQRCode", "onQRCodeAuthUserScanned", "onQRCodeAuthFinished")
+        Events(
+            "onQRCodeAuthGotQRCode",
+            "onQRCodeAuthUserScanned",
+            "onQRCodeAuthResult",
+            "onShowMessageFromWeChat",
+            "onAuthResult",
+            "onPayResult",
+            "onLaunchMiniProgramResult"
+        )
 
         OnCreate {
             moduleInstance = this@ExpoWechatModule
@@ -128,7 +156,7 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
 
                                 override fun onAuthFinish(p0: OAuthErrCode?, p1: String?) {
                                     sendEvent(
-                                        "onQRCodeAuthFinished",
+                                        "onQRCodeAuthResult",
                                         mapOf("errorCode" to p0, "authCode" to p1)
                                     )
                                 }
@@ -173,17 +201,344 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
                 promise.reject(apiNotRegisteredException)
             }
         }
+
+        AsyncFunction("shareImage") { options: ShareImageOptions, promise: Promise ->
+            if (api != null) {
+
+                val isFileUri = options.base64OrImageUri.startsWith("file://")
+                val mediaMessage = WXMediaMessage()
+
+                val req = SendMessageToWX.Req()
+                req.transaction = "img"
+                req.scene = WeChatSDKUtils.getWeChatShareScene(options.scene)
+                if (isFileUri) {
+                    val imagePath = options.base64OrImageUri.substring(7)
+                    val fileInputStream = FileInputStream(imagePath)
+                    val bitmap = BitmapFactory.decodeStream(fileInputStream)
+                    val imageObject = WXImageObject(bitmap)
+                    imageObject.imgDataHash = options.imageDataHash
+                    imageObject.entranceMiniProgramUsername = options.miniProgramId
+                    imageObject.entranceMiniProgramPath = options.miniProgramPath
+                    mediaMessage.mediaObject = imageObject
+                    mediaMessage.thumbData = WeChatSDKUtils.compressBitmapToTargetSize(
+                        bitmap,
+                        WeChatSDKUtils.thumbImageSizeKB
+                    )
+                    bitmap.recycle()
+                } else {
+                    val bytes = Base64.decode(options.base64OrImageUri, Base64.DEFAULT)
+                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                    val imageObject = WXImageObject(bitmap)
+                    imageObject.imgDataHash = options.imageDataHash
+                    imageObject.entranceMiniProgramUsername = options.miniProgramId
+                    imageObject.entranceMiniProgramPath = options.miniProgramPath
+
+                    mediaMessage.mediaObject = imageObject
+                    mediaMessage.thumbData = WeChatSDKUtils.compressBitmapToTargetSize(
+                        bitmap,
+                        WeChatSDKUtils.thumbImageSizeKB
+                    )
+                    bitmap.recycle()
+                }
+
+                req.message = mediaMessage
+                api?.sendReq(
+                    req
+                ) { p0 -> promise.resolve(p0) }
+            } else {
+                promise.reject(apiNotRegisteredException)
+            }
+        }
+
+        AsyncFunction("shareFile") { base64OrFileUri: String,
+                                     title: String,
+                                     scene: String,
+                                     promise: Promise ->
+            if (api != null) {
+                val fileObject = WXFileObject()
+                val isFileUri = base64OrFileUri.startsWith("file://")
+                if (isFileUri) {
+                    val filePath = base64OrFileUri.substring(7)
+                    fileObject.filePath = filePath
+                    appContext.reactContext?.let {
+                        val file = File(filePath)
+                        val contentUri =
+                            FileProvider.getUriForFile(it, it.packageName + ".fileprovider", file)
+                        it.grantUriPermission(
+                            "com.tencent.mm",
+                            contentUri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
+                    }
+                } else {
+                    fileObject.fileData = Base64.decode(base64OrFileUri, Base64.DEFAULT)
+                }
+
+                val mediaMessage = WXMediaMessage()
+                mediaMessage.mediaObject = fileObject
+                mediaMessage.title = title
+
+                val req = SendMessageToWX.Req()
+                req.transaction = System.currentTimeMillis().toString()
+                req.scene = WeChatSDKUtils.getWeChatShareScene(scene)
+                req.message = mediaMessage
+                api?.sendReq(req) { p0 -> promise.resolve(p0) }
+            } else {
+                promise.reject(apiNotRegisteredException)
+            }
+        }
+
+        AsyncFunction("shareMusic") { options: ShareMusicOptions, promise: Promise ->
+            if (api != null) {
+                val musicObject = WXMusicVideoObject()
+                musicObject.musicUrl = options.musicWebpageUrl
+                musicObject.musicDataUrl = options.musicFileUri
+                musicObject.songLyric = options.songLyric
+                musicObject.hdAlbumThumbFilePath = options.hdAlbumThumbFilePath
+                musicObject.hdAlbumThumbFileHash = options.hdAlbumThumbFileHash
+                musicObject.singerName = options.singerName
+                musicObject.albumName = options.albumName
+                musicObject.musicGenre = options.musicGenre
+                options.issueDate?.let {
+                    musicObject.issueDate = it
+                }
+                musicObject.identification = options.identification
+
+                val mediaMessage = WXMediaMessage()
+                mediaMessage.mediaObject = musicObject
+                mediaMessage.title = options.title
+                mediaMessage.description = options.description
+                mediaMessage.messageExt = options.extraMessage
+                options.thumbBase64OrImageUri?.let {
+                    val bitmap = WeChatSDKUtils.getBitmapFromBase64OrUri(it)
+                    mediaMessage.thumbData = WeChatSDKUtils.compressBitmapToTargetSize(bitmap, 64)
+                    bitmap.recycle()
+                }
+
+                val req = SendMessageToWX.Req()
+                req.transaction = "musicVideo"
+                req.message = mediaMessage
+                req.scene = WeChatSDKUtils.getWeChatShareScene(options.scene)
+                api?.sendReq(req) { p0 ->
+                    promise.resolve(p0)
+                }
+
+            } else {
+                promise.reject(apiNotRegisteredException)
+            }
+        }
+
+        AsyncFunction("shareVideo") { options: ShareVideoOptions, promise: Promise ->
+            if (api != null) {
+                val videoObject = WXVideoObject()
+                videoObject.videoUrl = options.videoUri
+                videoObject.videoLowBandUrl = options.lowQualityVideoUri
+
+                val mediaMessage = WXMediaMessage()
+                mediaMessage.mediaObject = videoObject
+                mediaMessage.title = options.title
+                mediaMessage.description = options.description
+                options.thumbBase64OrImageUri?.let {
+                    val bitmap = WeChatSDKUtils.getBitmapFromBase64OrUri(it)
+                    mediaMessage.thumbData = WeChatSDKUtils.compressBitmapToTargetSize(bitmap, 64)
+                    bitmap.recycle()
+                }
+                val req = SendMessageToWX.Req()
+                req.transaction = "video"
+                req.message = mediaMessage
+                req.scene = WeChatSDKUtils.getWeChatShareScene(options.scene)
+                api?.sendReq(req) { p0 ->
+                    promise.resolve(p0)
+                }
+
+            } else {
+                promise.reject(apiNotRegisteredException)
+            }
+        }
+
+        AsyncFunction("shareWebpage") { options: ShareWebpageOptions, promise: Promise ->
+            if (api != null) {
+                val webpageObject = WXWebpageObject()
+                webpageObject.webpageUrl = options.url
+                webpageObject.extInfo = options.extraInfo
+                webpageObject.canvasPageXml = options.canvasPageXml
+
+                val mediaMessage = WXMediaMessage()
+                mediaMessage.mediaObject = webpageObject
+                mediaMessage.title = options.title
+                mediaMessage.description = options.description
+                options.thumbBase64OrImageUri?.let {
+                    val bitmap = WeChatSDKUtils.getBitmapFromBase64OrUri(it)
+                    mediaMessage.thumbData = WeChatSDKUtils.compressBitmapToTargetSize(bitmap, 64)
+                    bitmap.recycle()
+                }
+                val req = SendMessageToWX.Req()
+                req.transaction = "webpage"
+                req.message = mediaMessage
+                req.scene = WeChatSDKUtils.getWeChatShareScene(options.scene)
+                api?.sendReq(req) { p0 ->
+                    promise.resolve(p0)
+                }
+
+            } else {
+                promise.reject(apiNotRegisteredException)
+            }
+        }
+
+        AsyncFunction("shareMiniProgram") { options: ShareMiniProgramOptions, promise: Promise ->
+            if (api != null) {
+                val miniProgramObject = WXMiniProgramObject()
+                miniProgramObject.webpageUrl = options.webpageUrl
+                miniProgramObject.userName = options.id
+                miniProgramObject.path = options.path
+                miniProgramObject.miniprogramType = WeChatSDKUtils.getMiniProgramType(options.type)
+                miniProgramObject.withShareTicket = options.withShareTicket == true
+                options.disableForward?.let {
+                    miniProgramObject.disableforward = it
+                }
+                miniProgramObject.isUpdatableMessage = options.isUpdatableMessage == true
+                miniProgramObject.isSecretMessage = options.isSecretMessage == true
+
+                val mediaMessage = WXMediaMessage()
+                mediaMessage.mediaObject = miniProgramObject
+                mediaMessage.title = options.title
+                mediaMessage.description = options.description
+                options.thumbBase64OrImageUri?.let {
+                    val bitmap = WeChatSDKUtils.getBitmapFromBase64OrUri(it)
+                    mediaMessage.thumbData = WeChatSDKUtils.compressBitmapToTargetSize(bitmap, 64)
+                    bitmap.recycle()
+                }
+                val req = SendMessageToWX.Req()
+                req.transaction = "webpage"
+                req.message = mediaMessage
+                req.scene = WeChatSDKUtils.getWeChatShareScene(options.scene)
+                api?.sendReq(req) { p0 ->
+                    promise.resolve(p0)
+                }
+            } else {
+                promise.reject(apiNotRegisteredException)
+            }
+        }
+
+        AsyncFunction("launchMiniProgram") { options: LaunchMiniProgramOptions,
+                                             promise: Promise ->
+            if (api != null) {
+                val req = WXLaunchMiniProgram.Req()
+                req.userName = options.id
+                req.path = options.path
+                req.miniprogramType = WeChatSDKUtils.getMiniProgramType(options.type)
+                req.extData = options.extraData
+                api?.sendReq(req) { p0 ->
+                    promise.resolve(p0)
+                }
+            } else {
+                promise.reject(apiNotRegisteredException)
+            }
+        }
+
+        AsyncFunction("openWeChatCustomerServiceChat") { corpId: String, url: String, promise: Promise ->
+            if (api != null) {
+                val req = WXOpenCustomerServiceChat.Req()
+                req.corpId = corpId
+                req.url = url
+                api?.sendReq(req) { p0 ->
+                    promise.resolve(p0)
+                }
+            } else {
+                promise.reject(apiNotRegisteredException)
+            }
+        }
+
+        AsyncFunction("sendSubscribeMessage") { scene: Int,
+                                                templateId: String,
+                                                reserved: String,
+                                                promise: Promise ->
+            if (api != null) {
+                val req = SubscribeMessage.Req()
+                req.scene = scene
+                req.templateID = templateId
+                req.reserved = reserved
+                api?.sendReq(req) { p0 ->
+                    promise.resolve(p0)
+                }
+            } else {
+                promise.reject(apiNotRegisteredException)
+            }
+        }
+
+        AsyncFunction("pay") { options: WeChatPayOptions, promise: Promise ->
+            if (api != null) {
+                val req = PayReq()
+                req.appId = wxAppId
+                req.partnerId = options.partnerId
+                req.prepayId = options.prepayId
+                req.nonceStr = options.nonceStr
+                req.timeStamp = options.timeStamp
+                req.sign = options.sign
+                req.packageValue = options.`package`
+                req.extData = options.extraData
+
+                api?.sendReq(req) { p0 ->
+                    promise.resolve(p0)
+                }
+            } else {
+                promise.reject(apiNotRegisteredException)
+            }
+        }
     }
 
     fun handleIntent(intent: Intent) {
         api?.handleIntent(intent, this);
     }
 
-    override fun onReq(p0: BaseReq?) {
 
+    override fun onReq(p0: BaseReq?) {
+        if (p0?.type == ConstantsAPI.COMMAND_SHOWMESSAGE_FROM_WX) {
+            val weChatMessage = p0 as ShowMessageFromWX.Req;
+            sendEventToJS(
+                "onShowMessageFromWeChat",
+                mapOf(
+                    "openId" to p0.openId,
+                    "transaction" to p0.transaction,
+                    "lang" to weChatMessage.lang,
+                    "country" to weChatMessage.country,
+                    "mediaType" to weChatMessage.message.mediaObject.type(),
+                    "title" to weChatMessage.message.title,
+                    "description" to weChatMessage.message.description,
+                    "extraInfo" to weChatMessage.message.messageExt,
+                    "mediaTag" to weChatMessage.message.mediaTagName
+                )
+            )
+        }
     }
 
-    override fun onResp(p0: BaseResp?) {
-        
+    override fun onResp(resp: BaseResp?) {
+        resp?.let {
+            val payload = mutableMapOf(
+                "errorCode" to it.errCode,
+                "errorMessage" to it.errStr,
+                "openId" to it.openId,
+                "transaction" to it.transaction
+            )
+            if (it is SendAuth.Resp) {
+                payload["code"] = it.code
+                payload["state"] = it.state
+                payload["url"] = it.url
+                payload["authResult"] = it.authResult
+                payload["lang"] = it.lang
+                payload["country"] = it.country
+                sendEventToJS("onAuthResult", payload)
+            } else if (it is PayResp) {
+                payload["prepayId"] = it.prepayId
+                payload["returnKey"] = it.returnKey
+                payload["extraInfo"] = it.extData
+                sendEventToJS("onPayResult", payload)
+            } else if (it is WXLaunchMiniProgram.Resp) {
+                payload["extraInfo"] = it.extMsg
+                sendEventToJS("onLaunchMiniProgramResult", payload)
+            } else if (it is SendMessageToWX.Resp) {
+                sendEventToJS("onLaunchMiniProgramResult", payload)
+            }
+        }
     }
 }
