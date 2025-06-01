@@ -23,14 +23,14 @@ declare class ExpoWechatModule extends NativeModule<ExpoWechatModuleEvents> {
    * @param scope 微信scope字段。
    * @param state 微信state字段。
    */
-  sendAuthRequest(scope: string, state: string): Promise<boolean>
+  sendAuthRequest(scope: 'snsapi_userinfo' | string, state: string): Promise<boolean>
 
   /**
    * 发送微信扫码登录请求。返回微信登录二维码。
    * @param appId 微信App ID
    * @param appSecret 微信App Secret
    */
-  sendAuthByQRRequest(appId: string, appSecret: string, scope: string): Promise<string>
+  sendAuthByQRRequest(appId: string, appSecret: string, scope: 'snsapi_userinfo' | string): Promise<string>
 
   /**
    * 分享文字到微信。返回分享结果。
