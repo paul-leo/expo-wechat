@@ -177,7 +177,7 @@ export type ShareImageOptions = {
  * @param description 歌曲描述，建议跟singerName保持一致。
  * @param extraMessage 额外信息字段，当微信跳回软件的时候会带上这个字段。
  * @param thumbBase64OrImageUri 缩略图内容，可以是本地图片URI，或者base64编码的图片数据。不得超过64kb。如果超过64kb，会被自动压缩。
- */
+ */ 
 export type ShareMusicOptions = {
   musicWebpageUrl: string
   musicFileUri: string

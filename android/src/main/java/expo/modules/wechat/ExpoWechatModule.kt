@@ -89,8 +89,8 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
         AsyncFunction("registerApp") { appId: String, universalLink: String ->
             wxAppId = appId;
             api = WXAPIFactory.createWXAPI(appContext.reactContext, appId, true)
-            api?.registerApp(appId)
-            return@AsyncFunction true
+            val result = api?.registerApp(appId) ?: false
+            return@AsyncFunction result
         }
 
         AsyncFunction("isWXAppInstalled") {
