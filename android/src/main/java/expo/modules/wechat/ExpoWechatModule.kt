@@ -1,6 +1,7 @@
 package expo.modules.wechat
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
 import androidx.core.content.FileProvider
@@ -42,7 +43,11 @@ import java.io.FileInputStream
 
 
 val apiNotRegisteredException =
-    CodedException("-1", "Please call registerApp to initialize WX api first! ", null)
+    CodedException(
+        "ERROR_NOT_REGISTERED",
+        "Please call registerApp to initialize WX api first! ",
+        null
+    )
 
 class ExpoWechatModule : Module(), IWXAPIEventHandler {
 
@@ -205,41 +210,43 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
         AsyncFunction("shareImage") { options: ShareImageOptions, promise: Promise ->
             if (api != null) {
 
-                val isFileUri = options.base64OrImageUri.startsWith("file://")
                 val mediaMessage = WXMediaMessage()
 
                 val req = SendMessageToWX.Req()
                 req.transaction = "img"
                 req.scene = WeChatSDKUtils.getWeChatShareScene(options.scene)
-                if (isFileUri) {
-                    val imagePath = options.base64OrImageUri.substring(7)
-                    val fileInputStream = FileInputStream(imagePath)
-                    val bitmap = BitmapFactory.decodeStream(fileInputStream)
-                    val imageObject = WXImageObject(bitmap)
-                    imageObject.imgDataHash = options.imageDataHash
-                    imageObject.entranceMiniProgramUsername = options.miniProgramId
-                    imageObject.entranceMiniProgramPath = options.miniProgramPath
-                    mediaMessage.mediaObject = imageObject
-                    mediaMessage.thumbData = WeChatSDKUtils.compressBitmapToTargetSize(
-                        bitmap,
-                        WeChatSDKUtils.thumbImageSizeKB
-                    )
-                    bitmap.recycle()
-                } else {
-                    val bytes = Base64.decode(options.base64OrImageUri, Base64.DEFAULT)
-                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                    val imageObject = WXImageObject(bitmap)
-                    imageObject.imgDataHash = options.imageDataHash
-                    imageObject.entranceMiniProgramUsername = options.miniProgramId
-                    imageObject.entranceMiniProgramPath = options.miniProgramPath
 
-                    mediaMessage.mediaObject = imageObject
+                val bitmap = WeChatSDKUtils.getBitmapFromBase64OrUri(options.base64OrImageUri)
+                if (bitmap == null) {
+                    promise.reject(
+                        CodedException(
+                            "ERROR_NO_IMAGE_FOUND",
+                            "Please provide a valid image data",
+                            null
+                        )
+                    )
+                    return@AsyncFunction
+                }
+                val imageObject = WXImageObject(bitmap)
+                imageObject.imgDataHash = options.imageDataHash
+                imageObject.entranceMiniProgramUsername = options.miniProgramId
+                imageObject.entranceMiniProgramPath = options.miniProgramPath
+
+                mediaMessage.mediaObject = imageObject
+                val thumbBitmap =
+                    WeChatSDKUtils.getBitmapFromBase64OrUri(options.thumbBase64OrImageUri)
+                if (thumbBitmap != null) {
+                    mediaMessage.thumbData = WeChatSDKUtils.compressBitmapToTargetSize(
+                        thumbBitmap,
+                        WeChatSDKUtils.thumbImageSizeKB
+                    )
+                } else {
                     mediaMessage.thumbData = WeChatSDKUtils.compressBitmapToTargetSize(
                         bitmap,
                         WeChatSDKUtils.thumbImageSizeKB
                     )
-                    bitmap.recycle()
                 }
+
 
                 req.message = mediaMessage
                 api?.sendReq(
@@ -309,8 +316,8 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
                 mediaMessage.title = options.title
                 mediaMessage.description = options.description
                 mediaMessage.messageExt = options.extraMessage
-                options.thumbBase64OrImageUri?.let {
-                    val bitmap = WeChatSDKUtils.getBitmapFromBase64OrUri(it)
+                val bitmap = WeChatSDKUtils.getBitmapFromBase64OrUri(options.thumbBase64OrImageUri)
+                if (bitmap != null) {
                     mediaMessage.thumbData = WeChatSDKUtils.compressBitmapToTargetSize(bitmap, 64)
                     bitmap.recycle()
                 }
@@ -338,10 +345,22 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
                 mediaMessage.mediaObject = videoObject
                 mediaMessage.title = options.title
                 mediaMessage.description = options.description
-                options.thumbBase64OrImageUri?.let {
-                    val bitmap = WeChatSDKUtils.getBitmapFromBase64OrUri(it)
-                    mediaMessage.thumbData = WeChatSDKUtils.compressBitmapToTargetSize(bitmap, 64)
-                    bitmap.recycle()
+                val thumbBitmap =
+                    WeChatSDKUtils.getBitmapFromBase64OrUri(options.thumbBase64OrImageUri)
+                if (thumbBitmap != null) {
+                    mediaMessage.thumbData =
+                        WeChatSDKUtils.compressBitmapToTargetSize(thumbBitmap, 64)
+                    thumbBitmap.recycle()
+                } else {
+                    if (options.videoUri.startsWith("file://")) {
+                        val videoPath = options.videoUri.substring(7)
+                        val firstFrameBitmap = WeChatSDKUtils.getVideoThumbnailBitmap(videoPath)
+                        if (firstFrameBitmap != null) {
+                            mediaMessage.thumbData =
+                                WeChatSDKUtils.compressBitmapToTargetSize(firstFrameBitmap, 64)
+                            firstFrameBitmap.recycle()
+                        }
+                    }
                 }
                 val req = SendMessageToWX.Req()
                 req.transaction = "video"
@@ -367,8 +386,8 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
                 mediaMessage.mediaObject = webpageObject
                 mediaMessage.title = options.title
                 mediaMessage.description = options.description
-                options.thumbBase64OrImageUri?.let {
-                    val bitmap = WeChatSDKUtils.getBitmapFromBase64OrUri(it)
+                val bitmap = WeChatSDKUtils.getBitmapFromBase64OrUri(options.thumbBase64OrImageUri)
+                if (bitmap != null) {
                     mediaMessage.thumbData = WeChatSDKUtils.compressBitmapToTargetSize(bitmap, 64)
                     bitmap.recycle()
                 }
@@ -403,8 +422,8 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
                 mediaMessage.mediaObject = miniProgramObject
                 mediaMessage.title = options.title
                 mediaMessage.description = options.description
-                options.thumbBase64OrImageUri?.let {
-                    val bitmap = WeChatSDKUtils.getBitmapFromBase64OrUri(it)
+                val bitmap = WeChatSDKUtils.getBitmapFromBase64OrUri(options.thumbBase64OrImageUri)
+                if (bitmap != null) {
                     mediaMessage.thumbData = WeChatSDKUtils.compressBitmapToTargetSize(bitmap, 64)
                     bitmap.recycle()
                 }

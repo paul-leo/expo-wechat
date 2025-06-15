@@ -147,6 +147,7 @@ export type ShareScene = 'session' | 'timeline' | 'favorite' | 'status' | 'speci
  * 分享图片到微信所需的参数。
  * @param base64OrImageUri 图片内容，可以是本地图片URI，或者base64编码的图片数据。
  * @param scene 要分享的目标场景。
+ * @param thumbBase64OrImageUri 缩略图内容，可以是本地图片URI，或者base64编码的图片数据。如果不提供，默认使用base64OrImageUri进行压缩，得到缩略图。
  * @param imageDataHash 图片数据的哈希值。
  * @param miniProgramId 小程序的原始id。
  * @param miniProgramPath 小程序的路径。
@@ -154,6 +155,7 @@ export type ShareScene = 'session' | 'timeline' | 'favorite' | 'status' | 'speci
 export type ShareImageOptions = {
   base64OrImageUri: string
   scene: ShareScene
+  thumbBase64OrImageUri?: string;
   imageDataHash?: string | null
   miniProgramId?: string | null
   miniProgramPath?: string | null
@@ -202,7 +204,7 @@ export type ShareMusicOptions = {
  * @param videoUri 视频文件URI。
  * @param scene 分享目标场景。
  * @param lowQualityVideoUri 低质量视频文件URI。用于在低带宽网络环境下使用。
- * @param thumbBase64OrImageUri 缩略图内容，可以是本地图片URI，或者base64编码的图片数据。
+ * @param thumbBase64OrImageUri 缩略图内容，可以是本地图片URI，或者base64编码的图片数据。如果不提供，默认是视频的第一帧的截图。
  * @param title 标题。
  * @param description 视频描述。
  */

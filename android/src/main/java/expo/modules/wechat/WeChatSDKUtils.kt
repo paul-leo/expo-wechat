@@ -2,6 +2,7 @@ package expo.modules.wechat
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.MediaMetadataRetriever
 import android.util.Base64
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX
 import kotlinx.coroutines.Dispatchers
@@ -120,7 +121,8 @@ class WeChatSDKUtils {
             }
         }
 
-        fun getBitmapFromBase64OrUri(base64OrUri: String): Bitmap {
+        fun getBitmapFromBase64OrUri(base64OrUri: String?): Bitmap? {
+            if (base64OrUri.isNullOrEmpty()) return null
             val isFileUri = base64OrUri.startsWith("file://")
             if (isFileUri) {
                 val filePath = base64OrUri.substring(7)
@@ -163,6 +165,22 @@ class WeChatSDKUtils {
                 "test" -> WXMiniProgramObject.MINIPROGRAM_TYPE_TEST
                 "preview" -> WXMiniProgramObject.MINIPROGRAM_TYPE_PREVIEW
                 else -> WXMiniProgramObject.MINIPTOGRAM_TYPE_RELEASE
+            }
+        }
+
+        fun getVideoThumbnailBitmap(videoPath: String): Bitmap? {
+            val retriever = MediaMetadataRetriever()
+            return try {
+                retriever.setDataSource(videoPath)
+                retriever.getFrameAtTime(0)
+            } catch (e: Exception) {
+                null
+            } finally {
+                try {
+                    retriever.release()
+                } catch (e: Exception) {
+                    // pass
+                }
             }
         }
     }

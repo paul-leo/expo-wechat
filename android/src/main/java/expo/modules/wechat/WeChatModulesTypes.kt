@@ -14,6 +14,9 @@ class ShareImageOptions: Record {
     var scene: String = "timeline"
 
     @Field
+    var thumbBase64OrImageUri: String? = null
+
+    @Field
     var imageDataHash: String? = null
 
     @Field
