@@ -369,7 +369,6 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
                 api?.sendReq(req) { p0 ->
                     promise.resolve(p0)
                 }
-
             } else {
                 promise.reject(apiNotRegisteredException)
             }
@@ -398,7 +397,6 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
                 api?.sendReq(req) { p0 ->
                     promise.resolve(p0)
                 }
-
             } else {
                 promise.reject(apiNotRegisteredException)
             }
@@ -455,7 +453,9 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
             }
         }
 
-        AsyncFunction("openWeChatCustomerServiceChat") { corpId: String, url: String, promise: Promise ->
+        AsyncFunction("openWeChatCustomerServiceChat") { corpId: String,
+                                                         url: String,
+                                                         promise: Promise ->
             if (api != null) {
                 val req = WXOpenCustomerServiceChat.Req()
                 req.corpId = corpId

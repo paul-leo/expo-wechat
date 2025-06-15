@@ -6,7 +6,7 @@ import expo.modules.kotlin.records.Record
 /**
  * 图片分享对象
  */
-class ShareImageOptions: Record {
+class ShareImageOptions : Record {
     @Field
     var base64OrImageUri: String = ""
 
@@ -29,37 +29,52 @@ class ShareImageOptions: Record {
 /**
  * 音乐分享对象
  */
-class ShareMusicOptions: Record {
+class ShareMusicOptions : Record {
     @Field
     var musicWebpageUrl: String = ""
+
     @Field
     var musicFileUri: String = ""
+
     @Field
     var singerName: String = ""
+
     @Field
     var duration: Int = 0
+
     @Field
     var scene: String = "timeline"
+
     @Field
     var songLyric: String? = null
+
     @Field
     var hdAlbumThumbFilePath: String? = null
+
     @Field
     var hdAlbumThumbFileHash: String? = null
+
     @Field
     var albumName: String? = null
+
     @Field
     var musicGenre: String? = null
+
     @Field
     var issueDate: Long? = null
+
     @Field
     var identification: String? = null
+
     @Field
     var title: String? = null
+
     @Field
     var description: String? = null
+
     @Field
     var extraMessage: String? = null
+
     @Field
     var thumbBase64OrImageUri: String? = null
 }
@@ -67,17 +82,22 @@ class ShareMusicOptions: Record {
 /*
 * 视频分享对象
 */
-class ShareVideoOptions: Record {
+class ShareVideoOptions : Record {
     @Field
     var videoUri: String = ""
+
     @Field
     var scene: String = "timeline"
+
     @Field
     var lowQualityVideoUri: String? = null
+
     @Field
     var thumbBase64OrImageUri: String? = null
+
     @Field
     var title: String? = null
+
     @Field
     var description: String? = null
 }
@@ -85,19 +105,25 @@ class ShareVideoOptions: Record {
 /*
 * 网页分享对象
 */
-class ShareWebpageOptions: Record {
+class ShareWebpageOptions : Record {
     @Field
     var url: String = ""
+
     @Field
     var scene: String = "timeline"
+
     @Field
     var extraInfo: String? = null
+
     @Field
     var canvasPageXml: String? = null
+
     @Field
     var title: String = ""
+
     @Field
     var description: String = ""
+
     @Field
     var thumbBase64OrImageUri: String? = null
 }
@@ -105,30 +131,40 @@ class ShareWebpageOptions: Record {
 /*
 * 小程序分享对象
 */
-class ShareMiniProgramOptions: Record {
+class ShareMiniProgramOptions : Record {
     @Field
     var webpageUrl: String? = null
+
     @Field
     var id: String = ""
+
     @Field
     var scene: String = "timeline"
+
     @Field
     var path: String? = null
+
     @Field
     var type: String = "release"
+
     @Field
     var withShareTicket: Boolean? = null
+
     @Field
     var title: String? = null
+
     @Field
     var description: String? = null
+
     @Field
     var thumbBase64OrImageUri: String? = null
 
     @Field
     var disableForward: Int? = null
+
     @Field
     var isUpdatableMessage: Boolean? = null
+
     @Field
     var isSecretMessage: Boolean? = null
 }
@@ -136,42 +172,39 @@ class ShareMiniProgramOptions: Record {
 /**
  * 启动小程序所需参数
  */
-class LaunchMiniProgramOptions: Record {
+class LaunchMiniProgramOptions : Record {
     @Field
     var id: String = ""
+
     @Field
     var type: String = "release"
+
     @Field
     var path: String? = null
+
     @Field
     var extraData: String? = null
 }
 
-/**
-export type WeChatPayOptions = {
-  partnerId: string
-  prepayId: string
-  nonceStr: string
-  timeStamp: string
-  sign: string
-  package: string
-  extraData: string
-}
- */
+class WeChatPayOptions : Record {
+    @Field
+    var partnerId: String = ""
 
- class WeChatPayOptions: Record {
-     @Field
-     var partnerId: String = ""
-     @Field
-     var prepayId: String = ""
-     @Field
-     var nonceStr: String = ""
-     @Field
-     var timeStamp: String = ""
-     @Field
-     var sign: String = ""
-     @Field
-     var `package`: String = ""
-     @Field
-     var extraData: String = ""
- }
+    @Field
+    var prepayId: String = ""
+
+    @Field
+    var nonceStr: String = ""
+
+    @Field
+    var timeStamp: String = ""
+
+    @Field
+    var sign: String = ""
+
+    @Field
+    var `package`: String = ""
+
+    @Field
+    var extraData: String = ""
+}

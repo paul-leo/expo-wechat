@@ -37,7 +37,8 @@ class WeChatSDKUtils {
 
         // 1. 获取SDK Ticket
         suspend fun getSDKTicket(accessToken: String): String? {
-            val url = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?type=2&access_token=$accessToken"
+            val url =
+                "https://api.weixin.qq.com/cgi-bin/ticket/getticket?type=2&access_token=$accessToken"
 
             return withContext(Dispatchers.IO) {
                 try {
@@ -57,7 +58,8 @@ class WeChatSDKUtils {
             sdkTicket: String,
             timestamp: String
         ): String {
-            val origin = "appid=$weiXinId&noncestr=$nonceStr&sdk_ticket=$sdkTicket&timestamp=$timestamp"
+            val origin =
+                "appid=$weiXinId&noncestr=$nonceStr&sdk_ticket=$sdkTicket&timestamp=$timestamp"
 
             val bytes = MessageDigest.getInstance("SHA-1")
                 .digest(origin.toByteArray(Charsets.UTF_8))
@@ -82,7 +84,8 @@ class WeChatSDKUtils {
                     val openid = tokenJson.getString("openid")
 
                     // 第二步：获取用户信息
-                    val userInfoUrl = "https://api.weixin.qq.com/sns/userinfo?access_token=$accessToken&openid=$openid"
+                    val userInfoUrl =
+                        "https://api.weixin.qq.com/sns/userinfo?access_token=$accessToken&openid=$openid"
                     val userInfoResponse = URL(userInfoUrl).readText()
                     val userJson = JSONObject(userInfoResponse)
 
