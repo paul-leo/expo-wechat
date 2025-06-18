@@ -1,5 +1,5 @@
 {
-  "name": "aron/expo-wechat",
+  "name": "@aron/expo-wechat",
   "version": "0.1.0",
   "description": "React Native expo package for Wechat Open SDK.",
   "main": "build/index.js",
