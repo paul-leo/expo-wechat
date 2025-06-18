@@ -62,6 +62,7 @@ URL Scheme白名单，也就是`LSApplicationQueriesSchemes`字段，因为是�
     "extraProguardRules": ""
 }
 ...
+```
 
 
 ## 总结
@@ -70,7 +71,7 @@ URL Scheme白名单，也就是`LSApplicationQueriesSchemes`字段，因为是�
 # 使用
 
 ```typescript
-import * as ExpoWeChat from '@aron/expo-wechat'
+import * as ExpoWeChat from 'expo-wechat-sdk'
 
 const result = await ExpoWeChat.registerApp(wechatAppId, universalLink);
 ```
@@ -81,7 +82,11 @@ const result = await ExpoWeChat.registerApp(wechatAppId, universalLink);
 启动之前，请在`.env`文件内配置微信AppId和Key，通用链接。
 
 # 鸣谢
-本框架参考了大量的[react-native-wechat-lib](https://github.com/little-snow-fox/react-native-wechat-lib)的代码，实现了基本上所有的API的功能，在此基础上，极大的简化了配置流程，并使用了最新的微信SDK，感谢前人！
+本框架参考了许多[react-native-wechat-lib](https://github.com/little-snow-fox/react-native-wechat-lib)的代码，实现了基本上所有的API的功能，在此基础上，极大的简化了配置流程，并使用了最新的微信SDK，感谢前人！
+
+# 联系方式
+本框架积极维护，如有任何问题，欢迎提交issue或者PR。
+QQ 群：682911244
 
 
 # 线路图
