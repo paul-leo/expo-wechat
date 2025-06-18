@@ -1,12 +1,15 @@
 # expo-wechat
 React Native Expo版本的微信SDK。
-本框架旨在让你所有原生代码配置都在RN侧以及json文件中进行，无需打开原生项目手动配置，充分利用expo的优势来做到简单好用。
+本框架旨在让你所有原生代码配置都在RN侧以及json文件中进行，真正做到0原生代码配置，充分利用expo的优势来做到简单好用。
 
-⚠️这个项目还在开发中，目前仅供参考。⚠️
+⚠️项目测试中，敬请期待⚠️
 
 # 安装
 ```shell
-npx expo install expo-wechat
+npx expo install @aron/expo-wechat
+
+# 不带支付版本
+# npx expo install @aron/expo-wechat-no-pay
 ```
 
 # 配置
@@ -59,3 +62,24 @@ URL Scheme白名单，也就是`LSApplicationQueriesSchemes`字段，因为是�
     "extraProguardRules": ""
 }
 ...
+
+
+## 总结
+配置部分，iOS需要配置URL Scheme和通用链接，安卓需要配置混淆规则，这些都可以通过expo的`app.json`来完成，配置部分完成后，就可以正常使用微信SDK了。
+
+# 使用
+
+```typescript
+import * as ExpoWeChat from '@aron/expo-wechat'
+
+const result = await ExpoWeChat.registerApp(wechatAppId, universalLink);
+```
+
+# Example
+
+克隆本仓库，进入example文件夹，执行`npm i`，再启动项目。
+启动之前，请在`.env`文件内配置微信AppId和Key，通用链接。
+
+# 鸣谢
+本框架参考了大量的[react-native-wechat-lib](https://github.com/little-snow-fox/react-native-wechat-lib)的代码，实现了基本上所有的API的功能，在此基础上，极大的简化了配置流程，并使用了最新的微信SDK，感谢前人！
+

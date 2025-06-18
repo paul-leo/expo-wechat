@@ -35,7 +35,6 @@ class WeChatSDKUtils {
             }
         }
 
-        // 1. 获取SDK Ticket
         suspend fun getSDKTicket(accessToken: String): String? {
             val url =
                 "https://api.weixin.qq.com/cgi-bin/ticket/getticket?type=2&access_token=$accessToken"
@@ -66,7 +65,6 @@ class WeChatSDKUtils {
             return bytes.joinToString("") { "%02x".format(it) }
         }
 
-        // 3. 获取用户信息 (使用协程避免回调地狱)
         suspend fun getUserInfo(
             weiXinId: String,
             weiXinSecret: String,
@@ -102,7 +100,6 @@ class WeChatSDKUtils {
             }
         }
 
-        // 4. 生成ObjectID (使用Kotlin原生随机数)
         fun generateObjectId(): String {
             val timestamp = (System.currentTimeMillis() / 1000).toInt().toString(16)
             val randomPart = buildString {

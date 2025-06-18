@@ -1,5 +1,3 @@
-import type { StyleProp, ViewStyle } from 'react-native';
-
 
 export type ExpoWechatModuleEvents = {
   onQRCodeAuthGotQRCode: (params: QRCodeAuthGotQRCodePayload) => void;
@@ -142,6 +140,16 @@ export type LaunchMiniProgramResultPayload = {
  * 微信分享目标场景。发送到聊天、朋友圈、收藏。
  */
 export type ShareScene = 'session' | 'timeline' | 'favorite' | 'status' | 'specifiedContact';
+
+/**
+ * 微信扫码登录所需参数。
+ */
+export type AuthByQROptions = {
+  appId: string,
+  appSecret: string,
+  scope: "snsapi_userinfo" | Omit<string, "snsapi_userinfo">,
+  schemeData?: string
+}
 
 /**
  * 分享图片到微信所需的参数。

@@ -3,17 +3,24 @@ import { NativeModule, requireNativeModule } from "expo";
 import {
   ExpoWechatModuleEvents,
   ShareScene,
+  AuthByQROptions,
   ShareImageOptions,
   ShareMusicOptions,
   ShareVideoOptions,
   ShareWebpageOptions,
   ShareMiniProgramOptions,
   LaunchMiniProgramOptions,
+  WeChatPayOptions,
 } from "./ExpoWechat.types";
 
 declare class ExpoWechatModule extends NativeModule<ExpoWechatModuleEvents> {
   isWXAppInstalled(): Promise<boolean>;
   getApiVersion(): Promise<string>;
+  getWXAppInstallUrl(): Promise<string | null>;
+    /**
+   * 打开微信App。返回打开结果。
+   */
+    openWXApp(): Promise<boolean>;
 
   /**
    * 初始化微信SDK。返回初始化结果。
@@ -23,9 +30,9 @@ declare class ExpoWechatModule extends NativeModule<ExpoWechatModuleEvents> {
   registerApp(appId: string, universalLink: string): Promise<boolean>;
 
   /**
-   * 打开微信App。返回打开结果。
+   * 启动微信自检流程，打印自检日志。iOS Only
    */
-  openWXApp(): Promise<boolean>;
+  checkUniversalLinkReady(): Promise<void>;
 
   /**
    * 发送微信授权登录请求。返回**发送**结果，注意是发送结果不是授权结果，授权结果要从事件中获取。
@@ -43,9 +50,7 @@ declare class ExpoWechatModule extends NativeModule<ExpoWechatModuleEvents> {
    * @param appSecret 微信App Secret
    */
   sendAuthByQRRequest(
-    appId: string,
-    appSecret: string,
-    scope: "snsapi_userinfo" | string
+    options: AuthByQROptions
   ): Promise<string>;
 
   /**
@@ -110,7 +115,11 @@ declare class ExpoWechatModule extends NativeModule<ExpoWechatModuleEvents> {
     templateId: string,
     reserved: string
   ): Promise<boolean>;
-  pay(): Promise<boolean>;
+
+  /**
+   * 微信支付
+   */
+  pay(options: WeChatPayOptions): Promise<boolean>;
 }
 
 export default requireNativeModule<ExpoWechatModule>("ExpoWechat");

@@ -44,7 +44,7 @@ import java.io.FileInputStream
 
 val apiNotRegisteredException =
     CodedException(
-        "ERROR_NOT_REGISTERED",
+        "ERR_NOT_REGISTERED",
         "Please call registerApp to initialize WX api first! ",
         null
     )
@@ -84,7 +84,8 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
             "onShowMessageFromWeChat",
             "onAuthResult",
             "onPayResult",
-            "onLaunchMiniProgramResult"
+            "onLaunchMiniProgramResult",
+            "onSendMessageToWeChatResult"
         )
 
         OnCreate {
@@ -104,6 +105,14 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
             } else {
                 throw apiNotRegisteredException
             }
+        }
+
+        AsyncFunction("getWXAppInstallUrl") {
+            return@AsyncFunction null
+        }
+
+        AsyncFunction("checkUniversalLinkReady") {
+            return@AsyncFunction true
         }
 
         AsyncFunction("getApiVersion") {
@@ -135,20 +144,20 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
             }
         }
 
-        AsyncFunction("sendAuthByQRRequest") Coroutine { appId: String, appSecret: String, scope: String ->
+        AsyncFunction("sendAuthByQRRequest") Coroutine { options: AuthByQROptions ->
             if (api != null) {
 
-                val accessToken = WeChatSDKUtils.getAccessToken(appId, appSecret);
+                val accessToken = WeChatSDKUtils.getAccessToken(options.appId, options.appSecret);
                 if (accessToken != null) {
                     val ticket = WeChatSDKUtils.getSDKTicket(accessToken)
                     if (ticket != null) {
                         val nonceString = WeChatSDKUtils.generateObjectId()
                         val timestamp = System.currentTimeMillis().toString()
                         val signature =
-                            WeChatSDKUtils.createSignature(appId, nonceString, ticket, timestamp)
+                            WeChatSDKUtils.createSignature(options.appId, nonceString, ticket, timestamp)
                         val oauth = DiffDevOAuthFactory.getDiffDevOAuth();
                         val result = oauth.auth(
-                            appId, scope, nonceString, timestamp, signature,
+                            options.appId, options.scope, nonceString, timestamp, signature,
                             object : OAuthListener {
                                 override fun onAuthGotQrcode(p0: String?, p1: ByteArray?) {
                                     val base64 = Base64.encodeToString(p1, Base64.DEFAULT)
@@ -220,7 +229,7 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
                 if (bitmap == null) {
                     promise.reject(
                         CodedException(
-                            "ERROR_NO_IMAGE_FOUND",
+                            "ERR_NO_IMAGE_FOUND",
                             "Please provide a valid image data",
                             null
                         )
@@ -411,7 +420,7 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
                 miniProgramObject.miniprogramType = WeChatSDKUtils.getMiniProgramType(options.type)
                 miniProgramObject.withShareTicket = options.withShareTicket == true
                 options.disableForward?.let {
-                    miniProgramObject.disableforward = it
+                    miniProgramObject.disableforward = if (it) 1 else 0
                 }
                 miniProgramObject.isUpdatableMessage = options.isUpdatableMessage == true
                 miniProgramObject.isSecretMessage = options.isSecretMessage == true
@@ -556,7 +565,7 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
                 payload["extraInfo"] = it.extMsg
                 sendEventToJS("onLaunchMiniProgramResult", payload)
             } else if (it is SendMessageToWX.Resp) {
-                sendEventToJS("onLaunchMiniProgramResult", payload)
+                sendEventToJS("onSendMessageToWeChatResult", payload)
             }
         }
     }

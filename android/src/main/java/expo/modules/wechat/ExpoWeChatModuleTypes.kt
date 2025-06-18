@@ -4,6 +4,23 @@ import expo.modules.kotlin.records.Field
 import expo.modules.kotlin.records.Record
 
 /**
+ * 微信扫码登录所需参数。
+ */
+class AuthByQROptions : Record {
+    @Field
+    var appId: String = ""
+
+    @Field
+    var appSecret: String = ""
+
+    @Field
+    var scope: String = "snsapi_userinfo"
+
+    @Field
+    var schemeData: String? = null
+}
+
+/**
  * 图片分享对象
  */
 class ShareImageOptions : Record {
@@ -160,7 +177,7 @@ class ShareMiniProgramOptions : Record {
     var thumbBase64OrImageUri: String? = null
 
     @Field
-    var disableForward: Int? = null
+    var disableForward: Boolean? = null
 
     @Field
     var isUpdatableMessage: Boolean? = null
