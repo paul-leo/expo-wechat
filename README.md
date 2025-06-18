@@ -6,10 +6,10 @@ React Native Expo版本的微信SDK。
 
 # 安装
 ```shell
-npx expo install @aron/expo-wechat
+npx expo install expo-wechat-sdk
 
 # 不带支付版本
-# npx expo install @aron/expo-wechat-no-pay
+# npx expo install expo-wechat-sdk-no-pay
 ```
 
 # 配置
@@ -83,3 +83,8 @@ const result = await ExpoWeChat.registerApp(wechatAppId, universalLink);
 # 鸣谢
 本框架参考了大量的[react-native-wechat-lib](https://github.com/little-snow-fox/react-native-wechat-lib)的代码，实现了基本上所有的API的功能，在此基础上，极大的简化了配置流程，并使用了最新的微信SDK，感谢前人！
 
+
+# 线路图
+
+- [ ] 实现选择发票功能
+- [ ] 发布不带支付功能的SDK

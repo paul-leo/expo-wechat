@@ -1,5 +1,5 @@
 {
-  "name": "@aron/expo-wechat",
+  "name": "expo-wechat-sdk",
   "version": "0.1.0",
   "description": "React Native expo package for Wechat Open SDK.",
   "main": "build/index.js",
@@ -18,7 +18,9 @@
   "keywords": [
     "react-native",
     "expo",
+    "wechat",
     "expo-wechat",
+    "expo-wechat-sdk",
     "ExpoWechat"
   ],
   "repository": "https://github.com/likeSo/expo-wechat",
