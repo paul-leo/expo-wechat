@@ -66,7 +66,13 @@ URL Scheme白名单，也就是`LSApplicationQueriesSchemes`字段，因为是�
 
 
 ## 总结
-配置部分，iOS需要配置URL Scheme和通用链接，安卓需要配置混淆规则，这些都可以通过expo的`app.json`来完成，配置部分完成后，就可以正常使用微信SDK了。
+配置部分，iOS需要配置URL Scheme和通用链接，安卓需要配置混淆规则。最后需要添加`expo-wechat-sdk`的config plugin：
+```json
+"plugins": [
+    "expo-wechat-sdk"
+]
+```
+这些是全部的配置项了，都可以通过expo的`app.json`来完成，配置部分完成后，就可以正常使用微信SDK了。
 
 # 使用
 
