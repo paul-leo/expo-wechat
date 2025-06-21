@@ -1,4 +1,6 @@
 # expo-wechat
+![npm](https://img.shields.io/npm/v/expo-wechat-sdk.svg)
+
 React Native Expo版本的微信SDK。
 本框架旨在让你所有原生代码配置都在RN侧以及json文件中进行，真正做到0原生代码配置，充分利用expo的优势来做到简单好用。
 
@@ -226,5 +228,5 @@ QQ 群：682911244
 # 线路图
 
 - [ ] 实现选择发票功能
-- [ ] 发布不带支付功能的SDK
+- [x] 发布不带支付功能的SDK
 - [ ] 完善文档
