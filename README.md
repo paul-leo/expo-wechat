@@ -4,8 +4,6 @@
 React Native Expo版本的微信SDK。
 本框架旨在让你所有原生代码配置都在RN侧以及json文件中进行，真正做到0原生代码配置，充分利用expo的优势来做到简单好用。
 
-⚠️项目测试中，敬请期待⚠️
-
 # 安装
 ```shell
 npx expo install expo-wechat-sdk
