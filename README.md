@@ -6,10 +6,10 @@ React Native Expo版本的微信SDK。
 
 # 安装
 ```shell
-npx expo install expo-wechat-sdk
+npx expo install expo-wechat
 
 # 不带支付版本
-# npx expo install expo-wechat-sdk-no-pay
+# npx expo install expo-wechat-no-pay
 ```
 
 # 配置
