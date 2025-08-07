@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
 
   s.dependency 'ExpoModulesCore'
 
-  s.dependency 'WXLibSwift'
+  s.dependency 'WechatOpenSDK-XCFramework','~> 2.0.5'
   
   # TODO: 无支付的包
 #  s.dependency 'WXLibSwift/NoPay'

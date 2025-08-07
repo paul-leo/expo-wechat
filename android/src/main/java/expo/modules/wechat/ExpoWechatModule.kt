@@ -545,7 +545,7 @@ class ExpoWechatModule : Module(), IWXAPIEventHandler {
                 req.partnerId = options.partnerId
                 req.prepayId = options.prepayId
                 req.nonceStr = options.nonceStr
-                req.timeStamp = options.timeStamp
+                req.timeStamp = options.timeStamp.toString()
                 req.sign = options.sign
                 req.packageValue = options.`package`
                 req.extData = options.extraData
