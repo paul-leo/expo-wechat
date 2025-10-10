@@ -25,7 +25,7 @@ URL Scheme用于给你的应用注册一个独一无二的链接，使别的软�
 通用链接是微信首推的唤起微信和你的App的方案，当通用链接没有配置好的时候，才会回退到URL Scheme方案。
 通用链接允许你向苹果注册一个URL地址，当访问这个地址的时候，系统优先唤起你的App，而不是网页。简单来说，它是一种比URL Scheme更好的唤起App的解决方案。
 
-使用Expo官方提供的方式来添加URL Scheme，以及配置通用链接。在`app.json`中添加以下字段：
+使用Expo官方提供的方式来添加URL Scheme，以及配置通用链接。在`app.json`或`app.config.js`中添加以下字段：
 ```json
 "ios": {
     "scheme": [
@@ -42,6 +42,7 @@ URL Scheme白名单，也就是`LSApplicationQueriesSchemes`字段，因为是�
 
 ## 安卓
 
+微信所需的proguard混淆规则内容如下：
 ```text
 -keep class com.tencent.mm.opensdk.** {
     *;
@@ -56,11 +57,17 @@ URL Scheme白名单，也就是`LSApplicationQueriesSchemes`字段，因为是�
 }
 ```
 
-需要配置proguard文件，在`app.json`中添加以下字段：
+需要利用[Expo BuildProperties](https://docs.expo.dev/versions/latest/sdk/build-properties/)，在`app.json`或`app.config.js`中添加以下内容：
 ```json
-"android": {
-    "extraProguardRules": ""
-}
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraProguardRules": "把以上规则内容放到这里",
+          },
+        }
+      ]
 ```
 
 
@@ -71,6 +78,8 @@ URL Scheme白名单，也就是`LSApplicationQueriesSchemes`字段，因为是�
     "expo-wechat"
 ]
 ```
+> 注意这里的plugins对象跟上面的expo-build-properties的是同一个对象。
+> 
 这些是全部的配置项了，都可以通过expo的`app.json`来完成，配置部分完成后，就可以正常使用微信SDK了。
 
 请注意，由于包含了自定义的原生代码，无法在expo go中直接使用。你应该使用`npx expo run:android`或者`npx expo run:ios`，编译原生app。详情参见官方[DevClient文档](https://docs.expo.dev/versions/latest/sdk/dev-client/)。
