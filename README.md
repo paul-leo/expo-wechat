@@ -94,6 +94,11 @@ const result = await ExpoWeChat.registerApp(wechatAppId, universalLink);
 # API
 以下是所有已支持的API：
 ```typescript
+  /**
+   * 是否已经成功调用registerApp方法。
+   */
+  isRegistered: boolean;
+  
   isWXAppInstalled(): Promise<boolean>;
   getApiVersion(): Promise<string>;
   getWXAppInstallUrl(): Promise<string | null>;

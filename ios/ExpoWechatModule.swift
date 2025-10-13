@@ -35,6 +35,10 @@ public class ExpoWechatModule: Module {
             Self.moduleInstance = nil
         }
         
+        Property("isRegistered") {
+            return isApiRegistered
+        }
+        
         AsyncFunction("isWXAppInstalled") {
             return WXApi.isWXAppInstalled()
         }
@@ -53,7 +57,7 @@ public class ExpoWechatModule: Module {
         
         AsyncFunction("registerApp") { (appId: String, universalLink: String) in
             let result = WXApi.registerApp(appId, universalLink: universalLink)
-            isApiRegistered = true
+            isApiRegistered = result
             return result
         }
         
@@ -429,7 +433,7 @@ public class ExpoWechatModule: Module {
             }
         }
         
-        AsyncFunction("pay") { (options: WeChatPayOptions, promise: Promise) in
+        AsyncFunction("pay") { (options: PayOptions, promise: Promise) in
             if (isApiRegistered) {
                 let req = PayReq()
                 

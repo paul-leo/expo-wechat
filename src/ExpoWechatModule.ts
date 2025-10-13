@@ -11,10 +11,15 @@ import {
   ShareMiniProgramOptions,
   LaunchMiniProgramOptions,
   LogLevel,
-  WeChatPayOptions,
+  PayOptions, 
 } from "./ExpoWechat.types";
 
 declare class ExpoWechatModule extends NativeModule<ExpoWechatModuleEvents> {
+  /**
+   * 是否已经成功调用registerApp方法。
+   */
+  isRegistered: boolean;
+  
   isWXAppInstalled(): Promise<boolean>;
   getApiVersion(): Promise<string>;
   getWXAppInstallUrl(): Promise<string | null>;
@@ -123,7 +128,7 @@ declare class ExpoWechatModule extends NativeModule<ExpoWechatModuleEvents> {
   /**
    * 微信支付
    */
-  pay(options: WeChatPayOptions): Promise<boolean>;
+  pay(options: PayOptions): Promise<boolean>;
 }
 
 export default requireNativeModule<ExpoWechatModule>("ExpoWechat");
