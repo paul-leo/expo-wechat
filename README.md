@@ -234,6 +234,11 @@ QQ 群：682911244
 - [ ] 完善文档
 
 # 常见问题
-### 报错 could not find module `ExpoModulesCore` for target '86_64-apple-ios-simulator'; found: arm64-apple-ios-simulator
+
+### 报错 could not find module `ExpoModulesCore` for target '86_64-apple-ios-simulator'; found: arm64-apple-ios-simulator
+
 这种问题通常发生在苹果M系列芯片电脑上，由于M芯片都是ARM架构，而一旦你的xcframework不提供ARM架构模拟器的包，就会报这种错。
-解决方案是启动Rosetta模拟器，或者用真机。
+
+**解决方案：**
+
+你可以使用 [expo-fix-ios-simulator-arch](https://github.com/Morphicai/expo-fix-ios-simulator-arch) 插件来自动解决这个问题，或者启动 Rosetta 模拟器、使用真机进行开发。
